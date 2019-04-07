@@ -1,26 +1,33 @@
 const http = require('http');
-const Twitter = require("twitter");
 const config = require("./config.js");
+const databaseUri = require("./database.js");
+const Twitter = require("twitter");
+const { MongoClient } = require("mongodb");
 
-const client = new Twitter(config);
+const mdbClient = new MongoClient(databaseUri, { useNewUrlParser: true });
+const twitterClient = new Twitter(config);
 const params = { screen_name: 'mondomascots', exclude_replies: true, count: 1 };
-
 let last = "";
+let db = null;
+
+let connectToMongo = () => {
+    return mdbClient.connect();
+}
+
 
 let getMascotStatus = () => {
-    client.get('statuses/user_timeline', params, function (error, tweets, response) {
+    twitterClient.get('statuses/user_timeline', params, function (error, tweets, response) {
         if (!error) {
-            console.log("SUCCESS!")
             tweets.forEach(t => {
                 last = t.entities.media[0].media_url_https;
-                console.log(last)
+                db.collection("mascots_raw").insertOne(t, function(err, res) {
+                    if (err) throw err;
+                    console.log("MASCOT: ", last);
+                });
             })
         }
     });
 }
-
-getMascotStatus();
-setInterval(getMascotStatus, 1000 * 60 * 15);
 
 http.createServer((req, res) => {
     res.statusCode = 200;
@@ -30,11 +37,18 @@ http.createServer((req, res) => {
 }).listen(8080);
 
 
+connectToMongo()
+    .then(()=>{
+        db = mdbClient.db("mascots");
+        getMascotStatus();
+        setInterval(getMascotStatus, 1000 * 60 * 15);
+    })
+    .catch(err => console.log(err));
+
+
 function buildHtml(req) {
     return '<!DOCTYPE html>'
-        + '<html><head>' +
-
-        `<img src="${last}"></img>`
-
+        + '<html><head>'
+        + `<img src="${last}"></img>`
         + '</body></html>';
 };
