@@ -6,7 +6,7 @@ const { MongoClient } = require("mongodb");
 
 const mdbClient = new MongoClient(databaseUri, { useNewUrlParser: true });
 const twitterClient = new Twitter(config);
-const params = { screen_name: 'mondomascots', exclude_replies: true, include_rts: false, tweet_mode: 'extended', count: 1 };
+const params = { screen_name: 'mondomascots', exclude_replies: true, include_rts: false, tweet_mode: 'extended', count: 20 };
 
 
 http.createServer((req, res) => {
@@ -19,13 +19,14 @@ http.createServer((req, res) => {
                 .then(() => {
                     db = mdbClient.db("mascots");
 
-
                     tweets.forEach(t => {
                         let tweet = null;
                         if (t.entities.media && t.entities.media.length) {
                             tweet = t;
-                            last = t.entities.media[0].media_url_https;
-                            console.log(last)
+                            if (!last) {
+                                last = t.entities.media[0].media_url_https;
+                                console.log(last)
+                            }
                         }
 
                         if (tweet) {
