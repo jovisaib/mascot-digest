@@ -1,0 +1,1 @@
+module.exports = "mongodb+srv://mascot_digest:OgTXZCRVh6YdnNo6@cluster0.ayrmu.azure.mongodb.net/<dbname>?retryWrites=true&w=majority"
