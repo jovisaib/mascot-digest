@@ -47,7 +47,7 @@ http.createServer((req, res) => {
                 .catch(err => console.log(err));
         }
     });
-}).listen(8080);
+}).listen(process.env.PORT || 8080);
 
 
 function buildHtml(last) {
