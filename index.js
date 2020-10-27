@@ -6,10 +6,10 @@ const { MongoClient } = require("mongodb");
 
 const mdbClient = new MongoClient(databaseUri, { useNewUrlParser: true });
 const twitterClient = new Twitter(config);
-const params = { screen_name: 'mondomascots', exclude_replies: true, include_rts: false, tweet_mode: 'extended', count: 20 };
-
+const params = { screen_name: 'mondomascots', exclude_replies: true, include_rts: false, tweet_mode: 'extended', count: 10000 };
 
 http.createServer((req, res) => {
+    console.log("ahjahjahaj")
     let last = "";
 
     twitterClient.get('statuses/user_timeline', params, function (error, tweets, response) {
@@ -18,7 +18,9 @@ http.createServer((req, res) => {
             mdbClient.connect()
                 .then(() => {
                     db = mdbClient.db("mascots");
+                    console.log("HEY")
 
+                    console.log(tweets.length)
                     tweets.forEach(t => {
                         let tweet = null;
                         if (t.entities.media && t.entities.media.length) {
@@ -44,11 +46,14 @@ http.createServer((req, res) => {
                     res.writeHead(200, { 'Content-Type': 'text/html' });
                     var html = buildHtml(last);
                     res.end(html);
+                    console.log("FETCHED")
                 })
                 .catch(err => console.log(err));
         }
     });
-}).listen();
+}).listen(8080);
+
+console.log("FETCHdsdsdED")
 
 
 function buildHtml(last) {
